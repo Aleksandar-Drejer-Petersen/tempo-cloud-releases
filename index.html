@@ -1,0 +1,68 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tempo account</title>
+<style>
+body{margin:0;font-family:system-ui,'Segoe UI',sans-serif;background:#111318;color:#e7eaf0;display:grid;place-items:center;min-height:100vh}
+.card{background:#1a1d24;border:1px solid #2a2f3a;border-radius:12px;padding:32px;width:340px}
+h1{font-size:20px;margin:0 0 4px}h1 span{color:#4f8cff}
+p{color:#a9b1c3;font-size:14px}
+input{width:100%;box-sizing:border-box;background:#111318;border:1px solid #2a2f3a;border-radius:8px;color:#e7eaf0;padding:10px 12px;margin:6px 0;font-size:14px}
+button{width:100%;background:#4f8cff;border:0;border-radius:8px;color:#fff;padding:11px;font-size:14px;font-weight:600;margin-top:10px;cursor:pointer}
+button:disabled{opacity:.6}
+.msg{font-size:13px;min-height:18px;margin-top:10px}
+.err{color:#ef4444}.ok{color:#22c55e}
+</style></head><body>
+<div class="card">
+<h1><span>Tempo</span> account</h1>
+<p>Choose a password for your account.</p>
+<form id="f">
+<input type="password" id="p1" placeholder="New password (min 8 characters)" minlength="8" required>
+<input type="password" id="p2" placeholder="Repeat password" required>
+<button id="b" type="submit">Set password</button>
+<div class="msg" id="m"></div>
+</form>
+</div>
+<script>
+var h = new URLSearchParams(location.hash.slice(1));
+var q = new URLSearchParams(location.search);
+var token = h.get('access_token');
+var tokenHash = h.get('token_hash') || q.get('token_hash');
+var linkType = h.get('type') || q.get('type') || 'invite';
+var linkError = h.get('error_description') || q.get('error_description');
+var m = document.getElementById('m');
+var f = document.getElementById('f');
+var b = document.getElementById('b');
+function fail(text) { m.textContent = text; m.className = 'msg err'; b.disabled = false; b.textContent = 'Set password'; }
+if (linkError) { m.textContent = linkError + ' — ask for a new invitation.'; m.className = 'msg err'; f.style.display = 'none'; }
+else if (!token && !tokenHash) { m.textContent = 'This link is invalid or expired. Ask for a new invitation.'; m.className = 'msg err'; f.style.display = 'none'; }
+function setPassword(accessToken, password) {
+  fetch('https://xijzqqzisphumrczdtwx.supabase.co/auth/v1/user', {
+    method: 'PUT',
+    headers: { apikey: 'sb_publishable_hHKjdch1UY4F-oTSE5Lz1w_VL7kjeGl', Authorization: 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password: password })
+  }).then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+    .then(function (res) {
+      if (res.ok) { m.textContent = 'Password saved. Open the Tempo app and sign in.'; m.className = 'msg ok'; }
+      else { fail((res.j && (res.j.msg || res.j.message || res.j.error_description)) || 'Something went wrong.'); }
+    })
+    .catch(function () { fail('Network error. Try again.'); });
+}
+f.addEventListener('submit', function (e) {
+  e.preventDefault();
+  var p1 = document.getElementById('p1').value, p2 = document.getElementById('p2').value;
+  if (p1 !== p2) { m.textContent = 'Passwords do not match.'; m.className = 'msg err'; return; }
+  b.disabled = true; b.textContent = 'Saving...';
+  if (token) { setPassword(token, p1); return; }
+  // Scanner-proof flow: the one-time token is exchanged only now.
+  fetch('https://xijzqqzisphumrczdtwx.supabase.co/auth/v1/verify', {
+    method: 'POST',
+    headers: { apikey: 'sb_publishable_hHKjdch1UY4F-oTSE5Lz1w_VL7kjeGl', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type: linkType, token_hash: tokenHash })
+  }).then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+    .then(function (res) {
+      if (res.ok && res.j.access_token) { setPassword(res.j.access_token, p1); }
+      else { fail((res.j && (res.j.msg || res.j.error_description || res.j.message)) || 'This link is invalid or expired.'); }
+    })
+    .catch(function () { fail('Network error. Try again.'); });
+});
+</script></body></html>
