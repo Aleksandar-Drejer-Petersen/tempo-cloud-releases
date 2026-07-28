@@ -1,0 +1,62 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Get Tempo</title>
+<style>
+body{margin:0;font-family:system-ui,'Segoe UI',sans-serif;background:#111318;color:#e7eaf0;display:grid;place-items:center;min-height:100vh}
+.card{background:#1a1d24;border:1px solid #2a2f3a;border-radius:12px;padding:32px;width:340px}
+h1{font-size:20px;margin:0 0 4px}h1 span{color:#4f8cff}
+p{color:#a9b1c3;font-size:14px;margin:6px 0}
+input{width:100%;box-sizing:border-box;background:#111318;border:1px solid #2a2f3a;border-radius:8px;color:#e7eaf0;padding:10px 12px;margin:6px 0;font-size:14px}
+button,a.btn{display:block;width:100%;box-sizing:border-box;text-align:center;text-decoration:none;background:#4f8cff;border:0;border-radius:8px;color:#fff;padding:11px;font-size:14px;font-weight:600;margin-top:10px;cursor:pointer}
+button:disabled{opacity:.6}
+.msg{font-size:13px;min-height:18px;margin-top:10px}
+.err{color:#ef4444}.ok{color:#22c55e}
+.hint{color:#7f8797;font-size:12px;margin-top:14px;line-height:1.5}
+</style></head><body>
+<div class="card">
+<h1>Get <span>Tempo</span></h1>
+<p>Create your free account, then download the app.</p>
+<form id="f">
+<input type="email" id="em" placeholder="Your email" autocomplete="email" required>
+<input type="password" id="p1" placeholder="Choose a password (min 8 characters)" minlength="8" autocomplete="new-password" required>
+<input type="password" id="p2" placeholder="Repeat password" autocomplete="new-password" required>
+<button id="b" type="submit">Create account</button>
+</form>
+<div class="msg" id="m"></div>
+<div id="done" style="display:none">
+<p class="ok">Account created.</p>
+<a class="btn" id="dl" href="#">Download Tempo</a>
+<p class="hint">Install it, open Tempo, and sign in with the email and password you just chose. Windows may show a blue "Windows protected your PC" screen the first time — click <b>More info &rarr; Run anyway</b> (the app isn't code-signed yet).</p>
+</div>
+</div>
+<script>
+var API = 'https://xijzqqzisphumrczdtwx.supabase.co/functions/v1/signup';
+var h = new URLSearchParams(location.hash.slice(1));
+var q = new URLSearchParams(location.search);
+var token = h.get('invite') || q.get('invite');
+var m = document.getElementById('m');
+var f = document.getElementById('f');
+var b = document.getElementById('b');
+function fail(t){ m.textContent = t; m.className = 'msg err'; b.disabled = false; b.textContent = 'Create account'; }
+if (!token) { m.textContent = 'This link is missing its invite code. Ask for a new one.'; m.className = 'msg err'; f.style.display = 'none'; }
+f.addEventListener('submit', function(e){
+  e.preventDefault();
+  var email = document.getElementById('em').value.trim();
+  var p1 = document.getElementById('p1').value, p2 = document.getElementById('p2').value;
+  if (p1 !== p2) { m.textContent = 'Passwords do not match.'; m.className = 'msg err'; return; }
+  m.textContent = ''; b.disabled = true; b.textContent = 'Creating...';
+  fetch(API, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token: token, email: email, password: p1 })
+  }).then(function(r){ return r.json().then(function(j){ return j; }); })
+    .then(function(res){
+      if (res.ok) {
+        f.style.display = 'none'; m.textContent = '';
+        document.getElementById('dl').href = res.download;
+        document.getElementById('done').style.display = 'block';
+      } else { fail(res.error || 'Something went wrong.'); }
+    })
+    .catch(function(){ fail('Network error. Try again.'); });
+});
+</script></body></html>
