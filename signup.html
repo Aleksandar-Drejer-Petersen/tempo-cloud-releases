@@ -12,6 +12,8 @@ button:disabled{opacity:.6}
 .msg{font-size:13px;min-height:18px;margin-top:10px}
 .err{color:#ef4444}.ok{color:#22c55e}
 .hint{color:#7f8797;font-size:12px;margin-top:14px;line-height:1.5}
+.alt{color:#7f8797;font-size:12px;margin-top:10px;text-align:center}
+.alt a{color:#4f8cff}
 </style></head><body>
 <div class="card">
 <h1>Get <span>Tempo</span></h1>
@@ -25,12 +27,15 @@ button:disabled{opacity:.6}
 <div class="msg" id="m"></div>
 <div id="done" style="display:none">
 <p class="ok">Account created.</p>
-<a class="btn" id="dl" href="#">Download Tempo</a>
-<p class="hint">Install it, open Tempo, and sign in with the email and password you just chose. Windows may show a blue "Windows protected your PC" screen the first time — click <b>More info &rarr; Run anyway</b> (the app isn't code-signed yet).</p>
+<a class="btn" id="dl" href="#" rel="noopener">Download Tempo</a>
+<p class="alt" id="alt" style="display:none"></p>
+<p class="hint" id="hint"></p>
 </div>
 </div>
 <script>
 var API = 'https://xijzqqzisphumrczdtwx.supabase.co/functions/v1/signup';
+var REPO = 'Aleksandar-Drejer-Petersen/tempo-cloud-releases';
+var RELEASES_PAGE = 'https://github.com/' + REPO + '/releases/latest';
 var h = new URLSearchParams(location.hash.slice(1));
 var q = new URLSearchParams(location.search);
 var token = h.get('invite') || q.get('invite');
@@ -39,6 +44,43 @@ var f = document.getElementById('f');
 var b = document.getElementById('b');
 function fail(t){ m.textContent = t; m.className = 'msg err'; b.disabled = false; b.textContent = 'Create account'; }
 if (!token) { m.textContent = 'This link is missing its invite code. Ask for a new one.'; m.className = 'msg err'; f.style.display = 'none'; }
+
+// After signup: pick the correct installer for the user's OS so they can't grab
+// the wrong file. Reads the latest release from the GitHub API (public) and sets
+// the button straight to the right asset; falls back to the releases page.
+function setupDownload() {
+  var dl = document.getElementById('dl');
+  var alt = document.getElementById('alt');
+  var hint = document.getElementById('hint');
+  var ua = navigator.userAgent || '';
+  var isMac = /Mac/i.test(ua) && !/iPhone|iPad/i.test(ua);
+  var isWin = /Windows|Win32|Win64/i.test(ua);
+  dl.href = RELEASES_PAGE; // safe default until the API answers
+  fetch('https://api.github.com/repos/' + REPO + '/releases/latest')
+    .then(function(r){ return r.json(); })
+    .then(function(rel){
+      var a = rel.assets || [];
+      function url(pred){ for (var i=0;i<a.length;i++){ if (pred(a[i].name)) return a[i].browser_download_url; } return null; }
+      var exe = url(function(n){ return /\.exe$/i.test(n); });
+      var dmgArm = url(function(n){ return /arm64\.dmg$/i.test(n); });
+      var dmgIntel = url(function(n){ return /\.dmg$/i.test(n) && !/arm64/i.test(n); });
+      if (isMac) {
+        dl.href = dmgArm || dmgIntel || RELEASES_PAGE;
+        dl.textContent = 'Download Tempo for Mac';
+        if (dmgIntel && dmgArm) { alt.innerHTML = 'Got an older Intel Mac? <a href="' + dmgIntel + '" rel="noopener">Download the Intel version</a>.'; alt.style.display = 'block'; }
+        hint.innerHTML = 'Open the .dmg, drag Tempo to Applications, then <b>right-click Tempo &rarr; Open &rarr; Open</b> (unsigned, so macOS asks once). Say yes to the permission prompt so it can track the active app.';
+      } else if (isWin) {
+        dl.href = exe || RELEASES_PAGE;
+        dl.textContent = 'Download Tempo for Windows';
+        hint.innerHTML = 'Run the installer. Windows may show a blue "Windows protected your PC" screen the first time &mdash; click <b>More info &rarr; Run anyway</b> (the app isn\'t code-signed yet).';
+      } else {
+        dl.textContent = 'Download Tempo';
+        hint.textContent = 'Open the file for your computer and sign in with the email and password you just chose.';
+      }
+    })
+    .catch(function(){ dl.href = RELEASES_PAGE; dl.textContent = 'Download Tempo'; });
+}
+
 f.addEventListener('submit', function(e){
   e.preventDefault();
   var email = document.getElementById('em').value.trim();
@@ -53,8 +95,8 @@ f.addEventListener('submit', function(e){
     .then(function(res){
       if (res.ok) {
         f.style.display = 'none'; m.textContent = '';
-        document.getElementById('dl').href = res.download;
         document.getElementById('done').style.display = 'block';
+        setupDownload();
       } else { fail(res.error || 'Something went wrong.'); }
     })
     .catch(function(){ fail('Network error. Try again.'); });
