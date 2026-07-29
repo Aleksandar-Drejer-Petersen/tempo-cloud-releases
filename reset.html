@@ -1,0 +1,58 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reset your Tempo password</title>
+<style>
+body{margin:0;font-family:system-ui,'Segoe UI',sans-serif;background:#111318;color:#e7eaf0;display:grid;place-items:center;min-height:100vh}
+.card{background:#1a1d24;border:1px solid #2a2f3a;border-radius:12px;padding:32px;width:340px}
+h1{font-size:20px;margin:0 0 4px}h1 span{color:#4f8cff}
+p{color:#a9b1c3;font-size:14px;margin:6px 0}
+input{width:100%;box-sizing:border-box;background:#111318;border:1px solid #2a2f3a;border-radius:8px;color:#e7eaf0;padding:10px 12px;margin:6px 0;font-size:14px}
+button{width:100%;box-sizing:border-box;background:#4f8cff;border:0;border-radius:8px;color:#fff;padding:11px;font-size:14px;font-weight:600;margin-top:10px;cursor:pointer}
+button:disabled{opacity:.6}
+.msg{font-size:13px;min-height:18px;margin-top:10px;line-height:1.5}
+.err{color:#ef4444}.ok{color:#22c55e}
+</style></head><body>
+<div class="card">
+<h1>Reset your <span>Tempo</span> password</h1>
+<p>Enter your email and we'll send you a link to choose a new password.</p>
+<form id="f">
+<input type="email" id="em" placeholder="Your email" autocomplete="email" required>
+<button id="b" type="submit">Send reset link</button>
+</form>
+<div class="msg" id="m"></div>
+</div>
+<script>
+var PROJECT = 'https://xijzqqzisphumrczdtwx.supabase.co';
+var KEY = 'sb_publishable_hHKjdch1UY4F-oTSE5Lz1w_VL7kjeGl';
+var f = document.getElementById('f');
+var b = document.getElementById('b');
+var m = document.getElementById('m');
+f.addEventListener('submit', function(e){
+  e.preventDefault();
+  var email = document.getElementById('em').value.trim();
+  b.disabled = true; b.textContent = 'Sending...'; m.textContent = '';
+  fetch(PROJECT + '/auth/v1/recover', {
+    method: 'POST',
+    headers: { apikey: KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: email })
+  }).then(function(r){
+    if (r.ok) {
+      f.style.display = 'none';
+      m.className = 'msg ok';
+      m.innerHTML = 'If there\'s a Tempo account for <b>' + email.replace(/[<>&]/g,'') + '</b>, a reset link is on its way. Check your inbox (and spam), then click <b>Choose new password</b>.';
+    } else if (r.status === 429) {
+      m.className = 'msg err'; m.textContent = 'Too many attempts — wait a few minutes and try again.';
+      b.disabled = false; b.textContent = 'Send reset link';
+    } else {
+      return r.json().then(function(j){
+        m.className = 'msg err';
+        m.textContent = (j && (j.msg || j.error_description || j.error)) || 'Something went wrong. Try again.';
+        b.disabled = false; b.textContent = 'Send reset link';
+      });
+    }
+  }).catch(function(){
+    m.className = 'msg err'; m.textContent = 'Network error. Try again.';
+    b.disabled = false; b.textContent = 'Send reset link';
+  });
+});
+</script></body></html>
