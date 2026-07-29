@@ -1,0 +1,57 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Download Tempo</title>
+<style>
+body{margin:0;font-family:system-ui,'Segoe UI',sans-serif;background:#111318;color:#e7eaf0;display:grid;place-items:center;min-height:100vh}
+.card{background:#1a1d24;border:1px solid #2a2f3a;border-radius:12px;padding:32px;width:340px}
+h1{font-size:20px;margin:0 0 4px}h1 span{color:#4f8cff}
+p{color:#a9b1c3;font-size:14px;margin:6px 0}
+a.btn{display:block;width:100%;box-sizing:border-box;text-align:center;text-decoration:none;background:#4f8cff;border:0;border-radius:8px;color:#fff;padding:11px;font-size:14px;font-weight:600;margin-top:12px;cursor:pointer}
+.alt{color:#7f8797;font-size:12px;margin-top:10px;text-align:center}
+.alt a{color:#4f8cff}
+.hint{color:#7f8797;font-size:12px;margin-top:14px;line-height:1.5}
+</style></head><body>
+<div class="card">
+<h1>Download <span>Tempo</span></h1>
+<p>Get the app, then open it and sign in with your account.</p>
+<a class="btn" id="dl" href="#" rel="noopener">Download Tempo</a>
+<p class="alt" id="alt" style="display:none"></p>
+<p class="hint" id="hint">Detecting your system…</p>
+</div>
+<script>
+var REPO = 'Aleksandar-Drejer-Petersen/tempo-cloud-releases';
+var RELEASES_PAGE = 'https://github.com/' + REPO + '/releases/latest';
+function setupDownload() {
+  var dl = document.getElementById('dl');
+  var alt = document.getElementById('alt');
+  var hint = document.getElementById('hint');
+  var ua = navigator.userAgent || '';
+  var isMac = /Mac/i.test(ua) && !/iPhone|iPad/i.test(ua);
+  var isWin = /Windows|Win32|Win64/i.test(ua);
+  dl.href = RELEASES_PAGE;
+  fetch('https://api.github.com/repos/' + REPO + '/releases/latest')
+    .then(function(r){ return r.json(); })
+    .then(function(rel){
+      var a = rel.assets || [];
+      function url(pred){ for (var i=0;i<a.length;i++){ if (pred(a[i].name)) return a[i].browser_download_url; } return null; }
+      var exe = url(function(n){ return /\.exe$/i.test(n); });
+      var dmgArm = url(function(n){ return /arm64\.dmg$/i.test(n); });
+      var dmgIntel = url(function(n){ return /\.dmg$/i.test(n) && !/arm64/i.test(n); });
+      if (isMac) {
+        dl.href = dmgArm || dmgIntel || RELEASES_PAGE;
+        dl.textContent = 'Download Tempo for Mac';
+        if (dmgIntel && dmgArm) { alt.innerHTML = 'Got an older Intel Mac? <a href="' + dmgIntel + '" rel="noopener">Download the Intel version</a>.'; alt.style.display = 'block'; }
+        hint.innerHTML = 'Open the .dmg, drag Tempo to Applications, then <b>right-click Tempo &rarr; Open &rarr; Open</b> (unsigned, so macOS asks once). Say yes to the permission prompt so it can track the active app.';
+      } else if (isWin) {
+        dl.href = exe || RELEASES_PAGE;
+        dl.textContent = 'Download Tempo for Windows';
+        hint.innerHTML = 'Run the installer. Windows may show a blue "Windows protected your PC" screen the first time &mdash; click <b>More info &rarr; Run anyway</b> (the app isn\'t code-signed yet).';
+      } else {
+        dl.textContent = 'Download Tempo';
+        hint.textContent = 'Open the file for your computer, then sign in with your account.';
+      }
+    })
+    .catch(function(){ dl.href = RELEASES_PAGE; dl.textContent = 'Download Tempo'; hint.textContent = 'Open the release page and pick the file for your system.'; });
+}
+setupDownload();
+</script></body></html>
