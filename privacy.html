@@ -35,12 +35,8 @@ Contact: <a href="mailto:aleksandardrejer@gmail.com">aleksandardrejer@gmail.com<
 
 <hr>
 
-<h2>1. Two editions, two very different data pictures</h2>
-<ul>
-<li><b>Tempo (personal edition):</b> all data stays <b>on your own computer</b> and, if you use OneDrive, in <b>your own OneDrive folder</b> so it can sync between your own devices. There is no account, and <b>no data is ever sent to us or to any server we operate.</b></li>
-<li><b>Tempo Cloud (paid edition):</b> in addition to the above, your data is synced to <b>your own password-protected account</b> so you can see it across devices. This account is hosted on our behalf by Supabase (see §5).</li>
-</ul>
-<p>Everything below applies to the cloud edition; only §2–§4 apply to the personal edition, because nothing leaves your machine there.</p>
+<h2>1. What Tempo is</h2>
+<p>Tempo automatically measures how long you spend in the apps and on the websites you use, and <b>syncs those statistics to your own password-protected Tempo account</b> so you can see them across your devices. Your account and data are hosted on our behalf by <b>Supabase, in the EU (Ireland)</b> (see §5). A copy is also kept on your own device so the app works offline.</p>
 
 <h2>2. What Tempo records</h2>
 <p>For each app and website you use, Tempo records:</p>
@@ -50,7 +46,7 @@ Contact: <a href="mailto:aleksandardrejer@gmail.com">aleksandardrejer@gmail.com<
 <li><b>Time counts</b> per day, per device: how many seconds each app/site was <em>Open</em>, <em>Focused</em>, and <em>Active</em> (in use). "Active" requires keyboard/mouse input within the last 3 minutes, or audio / a call in progress.</li>
 <li><b>Your device name</b> (your computer's host name), to separate stats per device.</li>
 </ul>
-<p>In the cloud edition only, we also process:</p>
+<p>We also process:</p>
 <ul>
 <li><b>Your email address</b> (to create and secure your account).</li>
 <li><b>Payment details</b> — handled entirely by our payment processor <b>Stripe</b>; we never see or store your card number. We store only a Stripe customer reference and your paid-through date.</li>
@@ -70,7 +66,7 @@ Contact: <a href="mailto:aleksandardrejer@gmail.com">aleksandardrejer@gmail.com<
 <h2>4. The browser extension</h2>
 <p>The optional Tempo browser extension exists only to tell Tempo which website is in the foreground, so time in your browser is attributed to the right site instead of just "the browser". It sends the active tab's domain, title, and an audio-playing flag <b>only to Tempo running on your own computer</b> (<code>127.0.0.1</code>, a local address). <b>It has no external network access</b> and cannot send anything to us or anyone else. As described in §2, Tempo stores only the domain-based site name from this — not the title or URL.</p>
 
-<h2>5. Where your data is stored (cloud edition)</h2>
+<h2>5. Where your data is stored</h2>
 <ul>
 <li><b>Your account and synced statistics</b> are stored with <b>Supabase</b>, in the <b>EU (Ireland)</b> region, on our behalf.</li>
 <li><b>Payments</b> are processed by <b>Stripe</b>.</li>
@@ -86,16 +82,13 @@ Contact: <a href="mailto:aleksandardrejer@gmail.com">aleksandardrejer@gmail.com<
 </ul>
 
 <h2>7. Data retention</h2>
-<ul>
-<li><b>Personal edition:</b> you control retention entirely — the data is in your own OneDrive/computer; delete it whenever you like.</li>
-<li><b>Cloud edition:</b> we keep your account data for as long as your account exists. If you close your account (or ask us to delete it), your synced statistics and profile are deleted. While an account is inactive/expired we may still receive queued uploads from your devices, but you cannot read them until the account is active again; deletion removes them.</li>
-</ul>
+<p>We keep your account data for as long as your account exists. If you close your account (or ask us to delete it), your synced statistics and profile are deleted. While an account is inactive or expired we may still receive queued uploads from your devices, but you cannot read them until the account is active again; deletion removes them. You can clear the local copy on your own device at any time.</p>
 
 <h2>8. Your rights</h2>
 <p>Under GDPR you have the right to access, correct, export, or delete your data, and to object to or restrict processing. Because the app is built around showing you your own data, most of this is available directly:</p>
 <ul>
-<li><b>Access/export:</b> all your data is visible in the app; the personal edition's files live in your OneDrive folder, and you can export a PDF report at any time.</li>
-<li><b>Deletion (cloud):</b> contact us at <a href="mailto:aleksandardrejer@gmail.com">aleksandardrejer@gmail.com</a> to delete your account and all synced data.</li>
+<li><b>Access/export:</b> all your data is visible in the app, and you can export a PDF report at any time.</li>
+<li><b>Deletion:</b> contact us at <a href="mailto:aleksandardrejer@gmail.com">aleksandardrejer@gmail.com</a> to delete your account and all synced data.</li>
 </ul>
 <p>You also have the right to lodge a complaint with your local data-protection authority (in Denmark, <b>Datatilsynet</b>).</p>
 
